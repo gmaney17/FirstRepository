@@ -5,9 +5,9 @@ public class Knight extends piece {
     @Override
     public String toString() {
         if(this.isWhite == true) {
-            return "WK  ";
+            return "WN  ";
         } else {
-            return "BK  ";
+            return "BN  ";
         }
     }
 }

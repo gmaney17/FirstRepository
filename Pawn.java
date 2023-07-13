@@ -5,7 +5,7 @@ public class Pawn extends piece {
     @Override
     public String toString() {
         if(this.isWhite == true) {
-            return "WP  ";
+            return '\u2659'+"  ";
         } else {
             return "BP  ";
         }

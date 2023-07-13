@@ -1004,8 +1004,8 @@ public class Game {
             }
         }
         if(upwardsCheck == true) {
-            int i = r + 1;
-            Tile t = getTile(i, c);
+            i = r + 1;
+            t = getTile(i, c);
             while(i <= 7 && t.p == null) {
                 t = getTile(i, c);
                 i++;
@@ -1013,10 +1013,282 @@ public class Game {
                     return false;
                 }
             }
-
         }
-
-
+        // downwards
+        boolean downwardsCheck = false;
+        i = r - 1;
+        t = getTile(i, c);
+        while(i >= 0 && t.p == null) {
+            t = getTile(i, c);
+            i--;
+        }
+        if(t.hasPieceOn() == true) {
+             if(t.p.isWhite == false && (t.p instanceof Queen || t.p instanceof Rook)) {
+              downwardsCheck = true;
+            }
+        }
+        if(downwardsCheck == true) {
+            i = r - 1;
+            t = getTile(i, c);
+            while(i >= 0 && t.p == null) {
+                t = getTile(i, c);
+                i--;
+                if(whiteIsInCheckMateHelperTwo(t) == true) {
+                    return false;
+                }
+            }
+        }
+        // right
+        boolean rightCheck = false;
+        int j = c + 1;
+        t = getTile(r, j);
+        while(j <= 7 && t.p == null) {
+            t = getTile(r, j);
+            j++;
+        }
+        if(t.hasPieceOn() == true) {
+             if(t.p.isWhite == false && (t.p instanceof Queen || t.p instanceof Rook)) {
+              rightCheck = true;
+            }
+        }
+        if(rightCheck == true) {
+            j = c + 1;
+            t = getTile(r, j);
+            while(j <= 7 && t.p == null) {
+                t = getTile(r, j);
+                j++;
+                if(whiteIsInCheckMateHelperTwo(t) == true) {
+                    return false;
+                }
+            }
+        }
+        // left
+        boolean leftCheck = false;
+        j = c - 1;
+        t = getTile(r, j);
+        while(j >= 0 && t.p == null) {
+            t = getTile(r, j);
+            j--;
+        }
+        if(t.hasPieceOn() == true) {
+             if(t.p.isWhite == false && (t.p instanceof Queen || t.p instanceof Rook)) {
+              leftCheck = true;
+            }
+        }
+        if(leftCheck == true) {
+            j = c - 1;
+            t = getTile(r, j);
+            while(j >= 0 && t.p == null) {
+                t = getTile(r, j);
+                j--;
+                if(whiteIsInCheckMateHelperTwo(t) == true) {
+                    return false;
+                }
+            }
+        }
+        // up right
+        boolean upRightCheck = false;
+        i = r + 1;
+        j = c + 1;
+        t = getTile(i, j);
+        if(t.p != null) { // pawn check
+            if(t.p.isWhite == false && t.p instanceof Pawn) { 
+                upRightCheck = true;
+            }
+        }
+        while(i <= 7 && j <= 7 && t.p == null) {
+            t = getTile(i, j);
+            i++;
+            j++;
+        }
+        if(t.hasPieceOn() == true) {
+             if(t.p.isWhite == false && (t.p instanceof Queen || t.p instanceof Bishop)) {
+              upRightCheck = true;
+            }
+        }
+        if(upRightCheck == true) {
+            i = r + 1;
+            j = c + 1;
+            t = getTile(i, j);
+            while(i <= 7 && j <= 7 && t.p == null) {
+                t = getTile(i, j);
+                i++;
+                j++;
+                if(whiteIsInCheckMateHelperTwo(t) == true) {
+                    return false;
+                }
+            }
+        }
+        // up left
+        boolean upLeftCheck = false;
+        i = r + 1;
+        j = c - 1;
+        t = getTile(i, j);
+        if(t.p != null) { // pawn check
+            if(t.p.isWhite == false && t.p instanceof Pawn) { 
+                upLeftCheck = true;
+            }
+        }
+        while(i <= 7 && j >= 0 && t.p == null) {
+            t = getTile(i, j);
+            i++;
+            j--;
+        }
+        if(t.hasPieceOn() == true) {
+             if(t.p.isWhite == false && (t.p instanceof Queen || t.p instanceof Bishop)) {
+              upLeftCheck = true;
+            }
+        }
+        if(upLeftCheck == true) {
+            i = r + 1;
+            j = c - 1;
+            t = getTile(i, j);
+            while(i <= 7 && j >= 0 && t.p == null) {
+                t = getTile(i, j);
+                i++;
+                j--;
+                if(whiteIsInCheckMateHelperTwo(t) == true) {
+                    return false;
+                }
+            }
+        }
+        // down right
+        boolean downRightCheck = false;
+        i = r - 1;
+        j = c + 1;
+        t = getTile(i, j);
+        while(i >= 0 && j <= 7 && t.p == null) {
+            t = getTile(i, j);
+            i--;
+            j++;
+        }
+        if(t.hasPieceOn() == true) {
+             if(t.p.isWhite == false && (t.p instanceof Queen || t.p instanceof Bishop)) {
+              downRightCheck = true;
+            }
+        }
+        if(downRightCheck == true) {
+            i = r - 1;
+            j = c + 1;
+            t = getTile(i, j);
+            while(i >= 0 && j <= 7 && t.p == null) {
+                t = getTile(i, j);
+                i--;
+                j++;
+                if(whiteIsInCheckMateHelperTwo(t) == true) {
+                    return false;
+                }
+            }
+        }
+        // down left
+        boolean downLeftCheck = false;
+        i = r - 1;
+        j = c - 1;
+        t = getTile(i, j);
+        while(i >= 0 && j >= 0 && t.p == null) {
+            t = getTile(i, j);
+            i--;
+            j--;
+        }
+        if(t.hasPieceOn() == true) {
+             if(t.p.isWhite == false && (t.p instanceof Queen || t.p instanceof Bishop)) {
+              downLeftCheck = true;
+            }
+        }
+        if(downLeftCheck == true) {
+            i = r - 1;
+            j = c - 1;
+            t = getTile(i, j);
+            while(i >= 0 && j >= 0 && t.p == null) {
+                t = getTile(i, j);
+                i--;
+                j--;
+                if(whiteIsInCheckMateHelperTwo(t) == true) {
+                    return false;
+                }
+            }
+        }
+        // now check the knight tiles if they are in bounds
+        if(r + 2 <= 7 && c + 1 <= 7) { // up 2 right 1
+            t = getTile(r + 2, c + 1);
+            if(t.p != null) {
+                if(t.p.isWhite == false && t.p instanceof Knight) {
+                    if(whiteIsInCheckMateHelperTwo(t) == true) {
+                        return false;
+                    }
+                }
+            }
+        }
+        if(r + 1 <= 7 && c + 2 <= 7) { // up 1 right 2
+            t = getTile(r + 1, c + 2);
+            if(t.p != null) {
+                if(t.p.isWhite == false && t.p instanceof Knight) {
+                    if(whiteIsInCheckMateHelperTwo(t) == true) {
+                        return false;
+                    }
+                }
+            }
+        }
+        if(r - 1 >= 0 && c + 2 <= 7) { // down 1 right 2
+            t = getTile(r - 1, c + 2);
+            if(t.p != null) {
+                if(t.p.isWhite == false && t.p instanceof Knight) {
+                    if(whiteIsInCheckMateHelperTwo(t) == true) {
+                        return false;
+                    }
+                }
+            }
+        }
+        if(r - 2 >= 0 && c + 1 <= 7) { // down 2 right 1
+            t = getTile(r - 2, c + 1);
+            if(t.p != null) {
+                if(t.p.isWhite == false && t.p instanceof Knight) {
+                    if(whiteIsInCheckMateHelperTwo(t) == true) {
+                        return false;
+                    }
+                }
+            }
+        }
+        if(r - 2 >= 0 && c - 1 >= 0) { // down 2 left 1
+            t = getTile(r - 2, c - 1);
+            if(t.p != null) {
+                if(t.p.isWhite == false && t.p instanceof Knight) {
+                    if(whiteIsInCheckMateHelperTwo(t) == true) {
+                        return false;
+                    }
+                }
+            }
+        }
+        if(r - 1 >= 0 && c - 2 >= 0) { // down 1 left 2
+            t = getTile(r - 1, c - 2);
+            if(t.p != null) {
+                if(t.p.isWhite == false && t.p instanceof Knight) {
+                    if(whiteIsInCheckMateHelperTwo(t) == true) {
+                        return false;
+                    }
+                }
+            }
+        }
+        if(r + 1 <= 7 && c - 2 >= 0) { // up 1 left 2
+            t = getTile(r + 1, c - 2);
+            if(t.p != null) {
+                if(t.p.isWhite == false && t.p instanceof Knight) {
+                    if(whiteIsInCheckMateHelperTwo(t) == true) {
+                        return false;
+                    }
+                }
+            }
+        }
+        if(r + 2 <= 7 && c - 1 >= 0) { // up 2 left 1
+            t = getTile(r + 2, c - 1);
+            if(t.p != null) {
+                if(t.p.isWhite == false && t.p instanceof Knight) {
+                    if(whiteIsInCheckMateHelperTwo(t) == true) {
+                        return false;
+                    }
+                }
+            }
+        }
 
         return true;
     }
@@ -1051,43 +1323,382 @@ public class Game {
     public static boolean whiteIsInCheckMateHelperTwo(Tile t) {
         int r = t.row;
         int c = t.column;
+        Tile original = t;
         // up
         if(r <= 6) {
             int i = r + 1;
-            Tile t = getTile(i, c);
+            t = getTile(i, c);
             while(i <= 7 && t.p == null) {
                 t = getTile(i, c);
                 i++;
             }
-            if((t.p instanceof Rook || t.p instanceof Queen) && t.p.isWhite == true) {
-                return true;
-            } 
+            if(t.p != null) {
+                if((t.p instanceof Rook || t.p instanceof Queen) && t.p.isWhite == true) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                } 
+            }
         }
         // down + pawn if one tile away 
         if(r >= 1) {
             int i = r - 1;
-            Tile t = getTile(i, c);
+            t = getTile(i, c);
             while(i >= 0 && t.p == null) {
                 t = getTile(i, c);
                 i--;
             }
-            if(t.p.isWhite == true && ((t.p instanceof Rook || t.p instanceof Queen) || (t.row == r - 1 && t.p instanceof pawn))) {
-                return true;
-            } 
+            if(t.p != null) {
+                if(t.p.isWhite == true && ((t.p instanceof Rook || t.p instanceof Queen) || (t.row == r - 1 && t.p instanceof Pawn))) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                } 
+            }
         }
         // right
-
+        if(c <= 6) {
+            int j = c + 1;
+            t = getTile(r, j);
+            while(j <= 7 && t.p == null) {
+                t = getTile(r, j);
+                j++;
+            }
+            if(t.p != null) {
+                if((t.p instanceof Rook || t.p instanceof Queen) && t.p.isWhite == true) {
+                piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                } 
+            }
+        }
         // left
-
+        if(c >= 1) {
+            int j = c - 1;
+            t = getTile(r, j);
+            while(j >= 0 && t.p == null) {
+                t = getTile(r, j);
+                j--;
+            }
+            if(t.p != null) {
+                if((t.p instanceof Rook || t.p instanceof Queen) && t.p.isWhite == true) {
+                piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                } 
+            }
+        }
         // up right
-
+        if(r <= 6 && c <= 6) {
+            int i = r + 1;
+            int j = c + 1;
+            t = getTile(i, j);
+            while(i <= 7 && j <= 7 && t.p == null) {
+                t = getTile(r, j);
+                j++;
+                i++;
+            }
+            if(t.p != null) {
+                if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == true) {
+                piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                } 
+            }
+        }
         // up left
-
+        if(r <= 6 && c >= 1) {
+            int i = r + 1;
+            int j = c - 1;
+            t = getTile(i, j);
+            while(i <= 7 && j >= 0 && t.p == null) {
+                t = getTile(r, j);
+                j--;
+                i++;
+            }
+            if(t.p != null) {
+                if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == true) {
+                piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                } 
+            }
+        }
         // down right + pawn if capture
-
+        if(r >= 1 && c <= 6) {
+            int i = r - 1;
+            int j = c + 1;
+            t = getTile(i, j);
+            if(original.p != null) { // pawn if it can capture
+                if(t.p instanceof Pawn && original.p.isWhite == false) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+            while(i >= 0 && j <= 7 && t.p == null) {
+                t = getTile(r, j);
+                j++;
+                i--;
+            }
+            if(t.p != null) {
+                if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == true) {
+                piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                } 
+            }
+        }
         // down left + pawn if capture
-
+        if(r >= 1 && c >= 1) {
+            int i = r - 1;
+            int j = c - 1;
+            t = getTile(i, j);
+            if(original.p != null) { // pawn if it can capture
+                if(t.p instanceof Pawn && original.p.isWhite == false) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+            while(i >= 0 && j >= 0 && t.p == null) {
+                t = getTile(r, j);
+                j--;
+                i--;
+            }
+            if(t.p != null) {
+                if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == true) {
+                piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                } 
+            }
+        }
         // knights
+        if(r + 2 <= 7 && c + 1 <= 7) { // up 2 right 1
+            int i = r + 2;
+            int j = c + 1;
+            t = getTile(i, j);
+            if(t.p != null) {
+                if(t.p.isWhite && t.p instanceof Knight) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+        }
+        if(r + 1 <= 7 && c + 2 <= 7) { // up 1 right 2
+            int i = r + 1;
+            int j = c + 2;
+            t = getTile(i, j);
+            if(t.p != null) {
+                if(t.p.isWhite && t.p instanceof Knight) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+        }
+        if(r - 1 >= 0 && c + 2 <= 7) { // down 1 right 2
+            int i = r - 1;
+            int j = c + 2;
+            t = getTile(i, j);
+            if(t.p != null) {
+                if(t.p.isWhite && t.p instanceof Knight) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+        }
+        if(r - 2 >= 0 && c + 1 <= 7) { // down 2 right 1
+            int i = r - 2;
+            int j = c + 1;
+            t = getTile(i, j);
+            if(t.p != null) {
+                if(t.p.isWhite && t.p instanceof Knight) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+        }
+        if(r - 2 >= 0 && c - 1 >= 0) { // down 2 left 1
+            int i = r - 2;
+            int j = c - 1;
+            t = getTile(i, j);
+            if(t.p != null) {
+                if(t.p.isWhite && t.p instanceof Knight) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+        }
+        if(r - 1 >= 0 && c - 2 >= 0) { // down 1 left 2
+            int i = r - 1;
+            int j = c - 2;
+            t = getTile(i, j);
+            if(t.p != null) {
+                if(t.p.isWhite && t.p instanceof Knight) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+        }
+        if(r + 1 <= 7 && c - 2 >= 0) { // up 1 left 2
+            int i = r + 1;
+            int j = c - 2;
+            t = getTile(i, j);
+            if(t.p != null) {
+                if(t.p.isWhite && t.p instanceof Knight) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+        }
+        if(r + 2 <= 7 && c - 1 >= 0) { // up 2 left 1
+            int i = r + 2;
+            int j = c - 1;
+            t = getTile(i, j);
+            if(t.p != null) {
+                if(t.p.isWhite && t.p instanceof Knight) {
+                    piece temp = original.p;
+                    original.p = t.p;
+                    t.p = null;
+                    if(Game.whiteIsInCheck() == false) {
+                        t.p = original.p;
+                        original.p = temp;
+                        return true;
+                    }
+                    t.p = original.p;
+                    original.p = temp;
+                }
+            }
+        }
+
+        return false;
     }
 
     public static boolean whiteIsInCheck() {
