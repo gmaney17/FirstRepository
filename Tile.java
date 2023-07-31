@@ -28,4 +28,22 @@ public class Tile {
         }
     }  
 
+    public boolean hasWhitePiece() {
+        if(this.hasPieceOn()) {
+            if(this.p.isWhite == true) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasBlackPiece() {
+        if(this.hasPieceOn()) {
+            if(this.p.isWhite == false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
