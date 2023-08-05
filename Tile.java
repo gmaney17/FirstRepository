@@ -1,6 +1,7 @@
 public class Tile {
     public int row;
     public int column;
+    public int enPassantCounter; // this gets incremented to ensure a tile cannot get en passanted onto more than one move afterwards
     public boolean canEnPassantOnto;
     public boolean isAttackedByWhite;
     public boolean isAttackedByBlack;
@@ -27,6 +28,15 @@ public class Tile {
             return true;
         }
     }  
+
+    public boolean hasColoredPiece(boolean color) {
+        if(this.hasPieceOn()) {
+            if(this.p.isWhite == color) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public boolean hasWhitePiece() {
         if(this.hasPieceOn()) {

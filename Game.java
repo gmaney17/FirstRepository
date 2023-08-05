@@ -21,12 +21,27 @@ public class Game {
 
     public static void main(String[] args) {
         System.out.println("Welcome to my chess game!");
+        System.out.println("To castle, type in exactly 'O-O' to short castle, or 'O-O-O' to long castle");
+        System.out.println("When inputting tiles, put the column first then the row. For example 'e2' followed by 'e4'");
+        System.out.println("You will be prompted for the white team's input and then the black team's input.");
+        System.out.println("Type in 'exit' at any time to quit. Have fun!");
         whiteCanLongCastle = true;
         whiteCanShortCastle = true;
         blackCanLongCastle = true;
         blackCanShortCastle = true;
         Game.makeTiles();
         Game.setupPieces();
+        /*
+        Tiles[0][1].p = bWhite;
+        Tiles[1][1].p = rWhite;
+        Tiles[1][0].p = pWhite;
+        Tiles[3][2].p = kWhite;
+        whiteKingTile = Tiles[3][2];
+        Tiles[0][0].p = kBlack;
+        blackKingTile = Tiles[0][0];
+        Tiles[2][5].p = pWhite;
+        Tiles[3][5].p = pBlack; // to set up test position comment out Game.setupPieces()
+        */
         isWhiteTurn = true;
         boolean gameIsOver = false;
 
@@ -38,42 +53,63 @@ public class Game {
             blackPlayedShortCastle = false;
             // display
             Display.printDisplay();
-            // input
-            System.out.println("Enter the row of the piece you want to move: ");
-            String sInputRow1 = scanner.next();
-            boolean caught = false;
-            boolean castled = false;
-            try {
-                inputRow1 = Integer.parseInt(sInputRow1);
-            } catch(Exception e) {
-                caught = true;
-                if(sInputRow1.equals("O-O") == true && isWhiteTurn) {
-                    caught = false;
-                    whitePlayedShortCastle = true;
-                }
-                if(sInputRow1.equals("O-O-O") == true && isWhiteTurn) {
-                    caught = false;
-                    whitePlayedLongCastle = true;
-                }
-                if(sInputRow1.equals("O-O") == true && isWhiteTurn == false) {
-                    caught = false;
-                    blackPlayedShortCastle = true;
-                }
-                if(sInputRow1.equals("O-O-O") == true && isWhiteTurn == false) {
-                    caught = false;
-                    blackPlayedLongCastle = true;
-                }
-                if(sInputRow1.equalsIgnoreCase("exit") == true) {
-                    break;
+            // temp
+            if(isInsufficientMaterial(isWhiteTurn)) {
+                System.out.println("Insufficient Material!");
+                break;
+            }
+            if(isInStaleMate(isWhiteTurn)) {
+                System.out.println("Stalemate!");
+                break;
+            }
+            // reset canEnPassantOnto for tiles
+            for(int i = 0; i <= 7; i++) {
+                for(int j = 0; j <= 7; j++) {
+                    if(Tiles[i][j].p == null && Tiles[i][j].canEnPassantOnto) {
+                        Tiles[i][j].enPassantCounter++;
+                        if(Tiles[i][j].enPassantCounter > 1) {
+                            Tiles[i][j].canEnPassantOnto = false;
+                            Tiles[i][j].enPassantCounter = 0;
+                        }
+                    }
                 }
             }
-            if(caught) {
-                System.out.println("Illegal input!");
+            // input
+            System.out.println("Enter the tile of the piece you want to move: ");
+            String sInputTile1 = scanner.next();
+            boolean castled = false;
+            if(sInputTile1.equals("exit")) {
+                break;
+            }
+            if(sInputTile1.equals("O-O")) {
+                if(isWhiteTurn) {
+                    whitePlayedShortCastle = true;
+                    castled = true;
+                } else {
+                    blackPlayedShortCastle = true;
+                    castled = true;
+                }
+            }
+            if(sInputTile1.equals("O-O-O")) {
+                if(isWhiteTurn) {
+                    whitePlayedLongCastle = true;
+                    castled = true;
+                } else {
+                    blackPlayedLongCastle = true;
+                    castled = true;
+                }
+            }
+            int[] inputTile1 = Display.convertInput(sInputTile1);
+            if(inputTile1 == null && castled == false) {
+                System.out.println("Invalid input!");
                 continue;
             }
-            // code for if white castles and can castle
+            if(castled == false) {
+                inputRow1 = inputTile1[1];
+                inputColumn1 = inputTile1[0];
+            }
+            // if white castles and can castle
             if((whitePlayedShortCastle || whitePlayedLongCastle) && canCastle(true)) {
-                System.out.println("castled!");
                 castled = true;
                 castle(true);
                 whiteCanLongCastle = false;
@@ -84,9 +120,19 @@ public class Game {
                 System.out.println("Castling is an Illegal move!");
                 continue;
             }
+            // if black castles and can castle
+            if((blackPlayedShortCastle || blackPlayedLongCastle) && canCastle(false)) {
+                castled = true;
+                castle(false);
+                blackCanLongCastle = false;
+                blackCanShortCastle = false;
+                isWhiteTurn = !isWhiteTurn;
+                continue;
+            } else if((blackPlayedShortCastle || blackPlayedLongCastle) && (canCastle(false) == false)) { // if black castles and cannot castle
+                System.out.println("Castling is an Illegal move!");
+                continue;
+            }
 
-            System.out.println("Enter the column of the piece you want to move: ");
-            inputColumn1 = scanner.nextInt();
             if(inputRow1 < 0 || inputRow1 > 7 || inputColumn1 < 0 || inputColumn1 > 7) {
                 System.out.println("Illegal move!");
                 continue;
@@ -104,11 +150,18 @@ public class Game {
                 continue;
             }
             if(castled == false) {
-                System.out.println("Enter the row of the tile you want to move to: ");
-                inputRow2 = scanner.nextInt();
-                 System.out.println("Enter the column of the tile you want to move to: ");
-                inputColumn2 = scanner.nextInt();
-
+                System.out.println("Enter tile you want to move to: ");
+                String sInputTile2 = scanner.next();
+                if(sInputTile2.equals("exit")) {
+                    break;
+                }
+                int[] inputTile2 = Display.convertInput(sInputTile2);
+                if(inputTile2 == null) {
+                    System.out.println("Invalid input!");
+                    continue;
+                }
+                inputRow2 = inputTile2[1];
+                inputColumn2 = inputTile2[0];
                 // execute move
                 if(Game.isLegalMoveExecuteIfLegal() == false) {
                     System.out.println("Illegal move!");
@@ -137,11 +190,56 @@ public class Game {
                 blackCanLongCastle = false;
             }
             // check for pawn promotion
+            Tile p = getTile(inputRow2, inputColumn2);
+            String in;
+            if(inputRow1 == 6 && inputRow2 == 7 && p.p instanceof Pawn && p.p.isWhite) { // checking for color is redundant but why not
+                System.out.println("Time to promote! Enter '0' for Queen, '1' for Bishop, '2' for Knight, or '3' for Rook. If input is invalid Queen is default");
+                in = scanner.next();
+                int i = getPromotionInput(in);
+                switch(i) {
+                    case 0:
+                        p.p = qWhite;
+                        break;
+                    case 1:
+                        p.p = bWhite;
+                        break;
+                    case 2:
+                        p.p = knWhite;
+                        break;
+                    case 3:
+                        p.p = rWhite;
+                        break;
+                    default:
+                        p.p = qWhite;
+                }
+            }
+            if(inputRow1 == 1 && inputRow2 == 0 && p.p instanceof Pawn && p.p.isWhite == false) { // checking for color is redundant but why not
+                System.out.println("Time to promote! Enter '0' for Queen, '1' for Bishop, '2' for Knight, or '3' for Rook. If input is invalid Queen is default");
+                in = scanner.next();
+                int i = getPromotionInput(in);
+                switch(i) {
+                    case 0:
+                        p.p = qBlack;
+                        break;
+                    case 1:
+                        p.p = bBlack;
+                        break;
+                    case 2:
+                        p.p = knBlack;
+                        break;
+                    case 3:
+                        p.p = rBlack;
+                        break;
+                    default:
+                        p.p = qBlack;
+                }
+            }
 
             // check for check
             if(isInCheck(true) == true) {
                 System.out.println("White is in check!");
                 if(isInCheckMate(true)) {
+                    Display.printDisplay();
                     System.out.println("Checkmate! Black Wins!");
                     gameIsOver = true;
                 }
@@ -149,6 +247,7 @@ public class Game {
             if(isInCheck(false) == true) {
                 System.out.println("Black is in check!");
                 if(isInCheckMate(false)) {
+                    Display.printDisplay();
                     System.out.println("Checkmate! White Wins!");
                     gameIsOver = true;
                 }
@@ -158,9 +257,23 @@ public class Game {
 
         }
         scanner.close();
+    }
 
+    public static int getPromotionInput(String in) {
+        if(in.equals("0")) {
+            return 0;
+        } 
+        if(in.equals("1")) {
+            return 1;
+        } 
+        if(in.equals("2")) {
+            return 2;
+        } 
+        if(in.equals("3")) {
+            return 3;
+        } 
 
-
+        return 0;
     }
 
    // pieces
@@ -223,7 +336,7 @@ public class Game {
         try{
             return Tiles[row][column];
         } catch(Exception e) {
-            System.out.println("Invalid Tile");
+            //System.out.println("Invalid Tile");
             return null;
         }
     }
@@ -252,7 +365,6 @@ public class Game {
             shortCastlePlayed = true;
         }
         if(shortCastlePlayed == true) { // short castle
-            System.out.println("Short castle initiated");
             Tile c5 = getTile(kingTile.row, kingTile.column + 1);
             Tile c6 = getTile(kingTile.row, kingTile.column + 2);
             Tile c7 = getTile(kingTile.row, kingTile.column + 3);
@@ -1108,8 +1220,14 @@ public class Game {
         while(i <= 7 && (t.p == null || t.p instanceof King)) {
             t = getTile(i, c);
             i++;
-            if(isInCheckMateHelperTwo(t, color) == true) {
-                return false;
+            if(t.p == null) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
+            } else if(t.p.isWhite == !color) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
             }
         }
         // downwards
@@ -1118,8 +1236,14 @@ public class Game {
         while(i >= 0 && (t.p == null || t.p instanceof King)) {
             t = getTile(i, c);
             i--;
-            if(isInCheckMateHelperTwo(t, color) == true) {
-                return false;
+            if(t.p == null) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
+            } else if(t.p.isWhite == !color) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
             }
         }
         // right
@@ -1128,8 +1252,14 @@ public class Game {
         while(j <= 7 && (t.p == null || t.p instanceof King)) {
             t = getTile(r, j);
             j++;
-            if(isInCheckMateHelperTwo(t, color) == true) {
-                return false;
+            if(t.p == null) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
+            } else if(t.p.isWhite == !color) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
             }
         }
         // left
@@ -1138,8 +1268,14 @@ public class Game {
         while(j >= 0 && (t.p == null || t.p instanceof King)) {
             t = getTile(r, j);
             j--;
-            if(isInCheckMateHelperTwo(t, color) == true) {
-                return false;
+            if(t.p == null) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
+            } else if(t.p.isWhite == !color) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
             }
         }
         // up right
@@ -1150,8 +1286,14 @@ public class Game {
             t = getTile(i, j);
             i++;
             j++;
-            if(isInCheckMateHelperTwo(t, color) == true) {
-                return false;
+            if(t.p == null) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
+            } else if(t.p.isWhite == !color) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
             }
         }
         // up left
@@ -1162,8 +1304,14 @@ public class Game {
             t = getTile(i, j);
             i++;
             j--;
-            if(isInCheckMateHelperTwo(t, color) == true) {
-                return false;
+            if(t.p == null) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
+            } else if(t.p.isWhite == !color) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
             }
         }
         // down right
@@ -1174,8 +1322,14 @@ public class Game {
             t = getTile(i, j);
             i--;
             j++;
-            if(isInCheckMateHelperTwo(t, color) == true) {
-                return false;
+            if(t.p == null) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
+            } else if(t.p.isWhite == !color) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
             }
         }
         // down left
@@ -1186,33 +1340,47 @@ public class Game {
             t = getTile(i, j);
             i--;
             j--;
-            if(isInCheckMateHelperTwo(t, color) == true) {
-                return false;
+            if(t.p == null) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
+            } else if(t.p.isWhite == !color) {
+                if(isInCheckMateHelperTwo(t, color) == true) {
+                    return false;
+                }
             }
         }
         // now check the knight tiles if they are in bounds
         if(knightsCausedCheckMateHelper(2, 1, r, c, true) == true) { // up 2 right 1
+            System.out.println("here7");
             return false;
         }
         if(knightsCausedCheckMateHelper(1, 2, r, c, true) == true) { // up 1 right 2
+            System.out.println("here8");
             return false;
         }
         if(knightsCausedCheckMateHelper(-1, 2, r, c, true) == true) { // down 1 right 2
+            System.out.println("here9");
             return false;
         }
         if(knightsCausedCheckMateHelper(-2, 1, r, c, true) == true) { // down 2 right 1
+            System.out.println("here100");
             return false;
         }
         if(knightsCausedCheckMateHelper(-2, -1, r, c, true) == true) { // down 2 left 1
+            System.out.println("here101");
             return false;
         }
         if(knightsCausedCheckMateHelper(-1, -2, r, c, true) == true) { // down 1 left 2
+            System.out.println("here102");
             return false;
         }
         if(knightsCausedCheckMateHelper(1, -2, r, c, true) == true) { // up 1 left 2
+            System.out.println("here103");
             return false;
         }
         if(knightsCausedCheckMateHelper(2, -1, r, c, true) == true) { // up 2 left 1
+            System.out.println("here104");
             return false;
         }
         return true;
@@ -1299,10 +1467,13 @@ public class Game {
      * returns true iff there is a same colored piece that can move onto this tile to prevent check
      */
     public static boolean isInCheckMateHelperTwo(Tile t, boolean color) {
+        if(t.p == null) {
+            return false;
+        }
         int r = t.row;
         int c = t.column;
         Tile original = t;
-        // up + pawn if black and one tile away
+        // up + pawn if black and one tile away or two tiles away if first move
         if(r <= 6) {
             int i = r + 1;
             t = getTile(i, c);
@@ -1311,15 +1482,17 @@ public class Game {
                 i++;
             }
             if(t.p != null) {
-                if(t.p.isWhite == color && ((t.p instanceof Rook || t.p instanceof Queen) || 
-                (t.row == r + 1 && t.p instanceof Pawn && t.p.isWhite == false && color == false))) {
+                if((t.p.isWhite == color && (t.p instanceof Rook || t.p instanceof Queen)) ||
+                (original.p == null && t.row == r + 2 && t.row == 6 && t.p instanceof Pawn && t.p.isWhite == false && color == false) ||
+                (original.p == null && t.row == r + 1 && t.p instanceof Pawn && t.p.isWhite == false && color == false)) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-1");
                         return true;
                     }
                 } 
             }
         }
-        // down + pawn if white and one tile away 
+        // down + pawn if white and one tile away or two tiles away if first move
         if(r >= 1) {
             int i = r - 1;
             t = getTile(i, c);
@@ -1328,9 +1501,11 @@ public class Game {
                 i--;
             }
             if(t.p != null) {
-                if(t.p.isWhite == color && ((t.p instanceof Rook || t.p instanceof Queen) || 
-                (t.row == r - 1 && t.p instanceof Pawn && t.p.isWhite == true && color == true))) {
+                if((t.p.isWhite == color && (t.p instanceof Rook || t.p instanceof Queen)) ||
+                (original.p == null && t.row == r - 2 && t.row == 1 && t.p instanceof Pawn && t.p.isWhite == true && color == true) ||
+                (original.p == null && t.row == r - 1 && t.p instanceof Pawn && t.p.isWhite == true && color == true)) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-2");
                         return true;
                     }
                 } 
@@ -1347,6 +1522,7 @@ public class Game {
             if(t.p != null) {
                 if((t.p instanceof Rook || t.p instanceof Queen) && t.p.isWhite == color) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-3");
                         return true;
                     }
                 } 
@@ -1363,6 +1539,7 @@ public class Game {
             if(t.p != null) {
                 if((t.p instanceof Rook || t.p instanceof Queen) && t.p.isWhite == color) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-4");
                         return true;
                     }
                 } 
@@ -1374,20 +1551,22 @@ public class Game {
             int j = c + 1;
             t = getTile(i, j);
             if(original.p != null) { // pawn if it can capture
-                if(!color && t.p instanceof Pawn && original.p.isWhite == false) {
+                if(!color && t.p instanceof Pawn && original.p.isWhite == true) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-5");
                         return true;
                     }
                 }
             }
             while(i <= 7 && j <= 7 && t.p == null) {
-                t = getTile(r, j);
+                t = getTile(i, j);
                 j++;
                 i++;
             }
             if(t.p != null) {
                 if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == color) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-6");
                         return true;
                     }
                 } 
@@ -1399,20 +1578,22 @@ public class Game {
             int j = c - 1;
             t = getTile(i, j);
             if(original.p != null) { // pawn if it can capture
-                if(!color && t.p instanceof Pawn && original.p.isWhite == false) {
+                if(!color && t.p instanceof Pawn && original.p.isWhite == true) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-7");
                         return true;
                     }
                 }
             }
             while(i <= 7 && j >= 0 && t.p == null) {
-                t = getTile(r, j);
+                t = getTile(i, j);
                 j--;
                 i++;
             }
             if(t.p != null) {
                 if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == color) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-8");
                         return true;
                     }
                 } 
@@ -1424,20 +1605,22 @@ public class Game {
             int j = c + 1;
             t = getTile(i, j);
             if(original.p != null) { // pawn if it can capture
-                if(color && t.p instanceof Pawn && original.p.isWhite == true) {
+                if(color && t.p instanceof Pawn && original.p.isWhite == false) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-9");
                         return true;
                     }
                 }
             }
             while(i >= 0 && j <= 7 && t.p == null) {
-                t = getTile(r, j);
+                t = getTile(i, j);
                 j++;
                 i--;
             }
             if(t.p != null) {
                 if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == color) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-10");
                         return true;
                     }
                 } 
@@ -1449,20 +1632,22 @@ public class Game {
             int j = c - 1;
             t = getTile(i, j);
             if(original.p != null) { // pawn if it can capture
-                if(color && t.p instanceof Pawn && original.p.isWhite == true) {
+                if(color && t.p instanceof Pawn && original.p.isWhite == false) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-11");
                         return true;
                     }
                 }
             }
             while(i >= 0 && j >= 0 && t.p == null) {
-                t = getTile(r, j);
+                t = getTile(i, j);
                 j--;
                 i--;
             }
             if(t.p != null) {
-                if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == true) {
+                if((t.p instanceof Bishop || t.p instanceof Queen) && t.p.isWhite == color) {
                     if(canSwapPiecesToPreventCheck(original, t, color)) {
+                        System.out.println("2-12");
                         return true;
                     }
                 } 
@@ -1501,19 +1686,40 @@ public class Game {
      * @param original The tile which is going to get t's piece put onto it
      * @param t The tile whose piece will go onto original, and then see if it prevents check
      * @param color true if white, false if black
-     * @return true iff swapping t's piece onto original will get color's king out of check
+     * @return true iff swapping t's piece onto original will not put color's king in check
      */
     public static boolean canSwapPiecesToPreventCheck(Tile original, Tile t, boolean color) {
+        boolean king = false;
+        if(t.p == kWhite || t.p == kBlack) {
+            king = true;
+        }
         piece temp = original.p;
         original.p = t.p;
         t.p = null;
+        if(king) {
+            if(color) {
+                whiteKingTile = original;
+            } else {
+                blackKingTile = original;
+            }
+        }
         if(isInCheck(color) == false) {
             t.p = original.p;
             original.p = temp;
+            if(color && king) {
+                whiteKingTile = t;
+            } else if(!color && king) {
+                blackKingTile = t;
+            }
             return true;
         } else {
             t.p = original.p;
             original.p = temp;
+            if(color && king) {
+                whiteKingTile = t;
+            } else if(!color && king) {
+                blackKingTile = t;
+            }
             return false;
         }
     }
@@ -1539,17 +1745,24 @@ public class Game {
     public static boolean isInCheck(boolean color) {
         int r;
         int c;
+        piece oppKing;
         if(color) {
             r = whiteKingTile.row;
             c = whiteKingTile.column;
+            oppKing = kBlack;
         } else {
             r = blackKingTile.row;
             c = blackKingTile.column;
+            oppKing = kWhite;
         }
         // straights
         if(r >= 1) { // downwards
             int i = r - 1;
             Tile t = getTile(i, c);
+            if(t.hasColoredPiece(!color)) {
+                if(t.p == oppKing)
+                return true;
+            }
             while(i >= 0 && t.p == null) {
                 t = getTile(i, c);
                 i--;
@@ -1563,6 +1776,10 @@ public class Game {
         if(r <= 6) { // upwards
             int i = r + 1;
             Tile t = getTile(i, c);
+            if(t.hasColoredPiece(!color)) {
+                if(t.p == oppKing)
+                return true;
+            }
             while(i <= 7 && t.p == null) {
                 t = getTile(i, c);
                 i++;
@@ -1576,6 +1793,10 @@ public class Game {
         if(c >= 1) { // left
             int i = c - 1;
             Tile t = getTile(r, i);
+            if(t.hasColoredPiece(!color)) {
+                if(t.p == oppKing)
+                return true;
+            }
             while(i >= 0 && t.p == null) {
                 t = getTile(r, i);
                 i--;
@@ -1589,6 +1810,10 @@ public class Game {
         if(c <= 6) { // right
             int i = c + 1;
             Tile t = getTile(r, i);
+            if(t.hasColoredPiece(!color)) {
+                if(t.p == oppKing)
+                return true;
+            }
             while(i <= 7 && t.p == null) {
                 t = getTile(r, i);
                 i++;
@@ -1604,6 +1829,10 @@ public class Game {
             int i = r - 1;
             int j = c - 1;
             Tile t = getTile(i, j);
+            if(t.hasColoredPiece(!color)) {
+                if(t.p == oppKing)
+                return true;
+            }
             if(t.hasPieceOn() == true) { // if pawn check
                 if(!color && t.p.isWhite == !color && (t.p instanceof Pawn)) {
                     return true;
@@ -1624,6 +1853,10 @@ public class Game {
             int i = r - 1;
             int j = c + 1;
             Tile t = getTile(i, j);
+            if(t.hasColoredPiece(!color)) {
+                if(t.p == oppKing)
+                return true;
+            }
             if(t.hasPieceOn() == true) { // if pawn check
                 if(!color && t.p.isWhite == !color && (t.p instanceof Pawn)) {
                     return true;
@@ -1644,7 +1877,10 @@ public class Game {
             int i = r + 1;
             int j = c - 1;
             Tile t = getTile(i, j);
-
+            if(t.hasColoredPiece(!color)) {
+                if(t.p == oppKing)
+                return true;
+            }
             if(t.hasPieceOn() == true) { // if pawn check
                 if(color && t.p.isWhite == !color && (t.p instanceof Pawn)) {
                     return true;
@@ -1665,7 +1901,10 @@ public class Game {
             int i = r + 1;
             int j = c + 1;
             Tile t = getTile(i, j);
-
+            if(t.hasColoredPiece(!color)) {
+                if(t.p == oppKing)
+                return true;
+            }
             if(t.hasPieceOn() == true) { // if pawn check
                 if(color && t.p.isWhite == !color && (t.p instanceof Pawn)) {
                     return true;
@@ -1750,5 +1989,362 @@ public class Game {
 
         return false;
     }
+    /**
+     * given param t, returns true iff there is a piece on p and that piece has a legal move
+     * @param t
+     * @param color true if white to move, false if black to move
+     * @return
+     * TODO: check for en passant
+     */
+    public static boolean hasLegalMove(Tile t) {
+        int r = t.row;
+        int c = t.column;
+        if(t.p == null) {
+            return false;
+        }
+        //int r = t.row;
+        //int c = t.column;
+        boolean color = t.p.isWhite;
+        // white pawn
+        if(t.p instanceof Pawn && color && r < 7) {
+            // if tile ahead is empty
+            if(getTile(r + 1, c).p == null  && canSwapPiecesToPreventCheck(getTile(r + 1, c), t, color)) {
+                return true;
+            }
+            // diag right
+            if(r < 7 && c < 7) {
+                if(getTile(r + 1, c + 1).hasColoredPiece(!color) && canSwapPiecesToPreventCheck(getTile(r + 1, c + 1), t, color)) {
+                    return true;
+                }
+            }
+            // diag left
+            if(r < 7 && c > 0) {
+                if(getTile(r + 1, c - 1).hasColoredPiece(!color) && canSwapPiecesToPreventCheck(getTile(r + 1, c - 1), t, color)) {
+                    return true;
+                }
+            }
+        }
+        // black pawn
+        if(t.p instanceof Pawn && !color && r > 0) {
+            // if tile ahead is empty
+            if(getTile(r - 1, c).p == null  && canSwapPiecesToPreventCheck(getTile(r - 1, c), t, !color)) {
+                return true;
+            }
+            // diag right
+            if(r > 0 && c < 7) {
+                if(getTile(r - 1, c + 1).hasColoredPiece(color) && canSwapPiecesToPreventCheck(getTile(r - 1, c + 1), t, !color)) {
+                    System.out.println(r+" "+c+"can move");
+                    return true;
+                }
+            }
+            // diag left
+            if(r > 0 && c > 0) {
+                if(getTile(r - 1, c - 1).hasColoredPiece(color) && canSwapPiecesToPreventCheck(getTile(r - 1, c - 1), t, !color)) {
+                    System.out.println(r+" "+c+"can move");
+                    return true;
+                }
+            }
+        }
+        // bishop/queen
+        if(t.p instanceof Queen || t.p instanceof Bishop) {
+            // up right
+            int i = r + 1;
+            int j = c + 1;
+            Tile tile = getTile(i, j);
+            while(i <= 7 && j <= 7 && (tile.p == null || tile.hasColoredPiece(!color))) {
+                tile = getTile(i, j);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+                if(tile.hasColoredPiece(!color)) { // if it cannot swap on an opposite colored piece then the loop must break
+                    break;
+                }
+                i++;
+                j++;
+            }
+            // up left
+            i = r + 1;
+            j = c - 1;
+            tile = getTile(i, j);
+            while(i <= 7 && j >= 0 && (tile.p == null || tile.hasColoredPiece(!color))) {
+                tile = getTile(i, j);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+                if(tile.hasColoredPiece(!color)) { // if it cannot swap on an opposite colored piece then the loop must break
+                    break;
+                }
+                i++;
+                j--;
+            }
+            // down right
+            i = r - 1;
+            j = c + 1;
+            tile = getTile(i, j);
+            while(i >= 0 && j <= 7 && (tile.p == null || tile.hasColoredPiece(!color))) {
+                tile = getTile(i, j);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+                if(tile.hasColoredPiece(!color)) { // if it cannot swap on an opposite colored piece then the loop must break
+                    break;
+                }
+                i--;
+                j++;
+            }
+            // down left
+            i = r - 1;
+            j = c - 1;
+            tile = getTile(i, j);
+            while(i >= 0 && j >= 0 && (tile.p == null || tile.hasColoredPiece(!color))) {
+                tile = getTile(i, j);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+                if(tile.hasColoredPiece(!color)) { // if it cannot swap on an opposite colored piece then the loop must break
+                    break;
+                }
+                i--;
+                j--;
+            }
+        }
+        // rook/queen
+        if(t.p instanceof Rook || t.p instanceof Queen) {
+            // up
+            int i = r + 1;
+            int j = c;
+            Tile tile = getTile(i, j);
+            while(i <= 7 && (tile.p == null || tile.hasColoredPiece(!color))) {
+                tile = getTile(i, j);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+                if(tile.hasColoredPiece(!color)) { // if it cannot swap on an opposite colored piece then the loop must break
+                    break;
+                }
+                i++;
+            }
+            // down
+            i = r - 1;
+            j = c;
+            tile = getTile(i, j);
+            while(i >= 0 && (tile.p == null || tile.hasColoredPiece(!color))) {
+                tile = getTile(i, j);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+                if(tile.hasColoredPiece(!color)) { // if it cannot swap on an opposite colored piece then the loop must break
+                    break;
+                }
+                i--;
+            }
+            // right
+            i = r;
+            j = c + 1;
+            tile = getTile(i, j);
+            while(j <= 7 && (tile.p == null || tile.hasColoredPiece(!color))) {
+                tile = getTile(i, j);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+                if(tile.hasColoredPiece(!color)) { // if it cannot swap on an opposite colored piece then the loop must break
+                    break;
+                }
+                j++;
+            }
+            // left
+            i = r;
+            j = c - 1;
+            tile = getTile(i, j);
+            while(j >= 0 && (tile.p == null || tile.hasColoredPiece(!color))) {
+                tile = getTile(i, j);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+                if(tile.hasColoredPiece(!color)) { // if it cannot swap on an opposite colored piece then the loop must break
+                    break;
+                }
+                j--;
+            }
+        }
+        // knight
+        if(t.p instanceof Knight) {
+            int i = r;
+            int j = c;
+            if(i + 2 <= 7 && j + 1 <= 7) { // up 2 right 1
+                Tile tile = getTile(i + 2, j + 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            i = r;
+            j = c;
+            if(i + 1 <= 7 && j + 2 <= 7) { // up 1 right 2
+                Tile tile = getTile(i + 1, j + 2);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            i = r;
+            j = c;
+            if(i - 1 >= 0 && j + 2 <= 7) { // down 1 right 2
+                Tile tile = getTile(i - 1, j + 2);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            i = r;
+            j = c;
+            if(i - 2 >= 0 && j + 1 <= 7) { // down 2 right 1
+                Tile tile = getTile(i - 2, j + 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            i = r;
+            j = c;
+            if(i - 2 >= 0 && j - 1 >= 0) { // down 2 left 1
+                Tile tile = getTile(i - 2, j - 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            i = r;
+            j = c;
+            if(i - 1 >= 0 && j - 2 >= 0) { // down 1 left 2
+                Tile tile = getTile(i - 1, j - 2);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            i = r;
+            j = c;
+            if(i + 1 <= 7 && j - 2 >= 0) { // up 1 left 2
+                Tile tile = getTile(i + 1, j - 2);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            i = r;
+            j = c;
+            if(i + 2 <= 7 && j - 1 >= 0) { // up 2 left 1
+                Tile tile = getTile(i + 2, j - 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+        }
+        // king
+        if(t.p instanceof King) {
+            if(r + 1 <= 7) { // up
+                Tile tile = getTile(r + 1, c);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            if(r - 1 >= 0) { // down
+                Tile tile = getTile(r - 1, c);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            if(c + 1 <= 7) { // right
+                Tile tile = getTile(r, c + 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            if(c - 1 >= 0) { // left
+                Tile tile = getTile(r, c - 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            if(r + 1 <= 7 && c + 1 <= 7) { // up right
+                Tile tile = getTile(r + 1, c + 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            if(r + 1 <= 7 && c - 1 >= 0) { // up left
+                Tile tile = getTile(r + 1, c - 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            if(r - 1 >= 0 && c + 1 <= 7) { // down right
+                Tile tile = getTile(r - 1, c + 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+            if(r - 1 >= 0 && c - 1 >= 0) { // down left
+                Tile tile = getTile(r - 1, c - 1);
+                if((tile.p == null || tile.hasColoredPiece(!color)) && canSwapPiecesToPreventCheck(tile, t, color)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * 
+     * @param color true if for white, false if for black
+     * @return true iff there is a stalemate with color to move or if there is insufficient material
+     */
+    public static boolean isInStaleMate(boolean color) {
+        for(int i = 0; i <= 7; i++) {
+            for(int j = 0; j <= 7; j++) {
+                if(Tiles[i][j].hasColoredPiece(color) && hasLegalMove(Tiles[i][j])) {
+                    return false;
+                }
+            }
+        }
 
+        return true;
+    }
+
+    public static boolean isInsufficientMaterial(boolean color) {
+        int colorKnightCounter = 0;
+        int notColorKnightCounter = 0;
+        int colorBishopCounter = 0;
+        int notColorBishopCounter = 0;
+        int queenOrRookCounter = 0;
+        int pawnCounter = 0;
+        for(int i = 0; i <= 7; i++) {
+            for(int j = 0; j <= 7; j++) {
+                if(Tiles[i][j].hasPieceOn()) {
+                    if(Tiles[i][j].hasColoredPiece(color)) {
+                        if(Tiles[i][j].p instanceof Knight)
+                        colorKnightCounter++;
+                        if(Tiles[i][j].p instanceof Bishop)
+                        colorBishopCounter++;
+                        if(Tiles[i][j].p instanceof Rook || Tiles[i][j].p instanceof Queen)
+                        queenOrRookCounter++;
+                        if(Tiles[i][j].p instanceof Pawn)
+                        pawnCounter++;
+                    } else {
+                        if(Tiles[i][j].p instanceof Knight)
+                        notColorKnightCounter++;
+                        if(Tiles[i][j].p instanceof Bishop)
+                        notColorBishopCounter++;
+                        if(Tiles[i][j].p instanceof Rook || Tiles[i][j].p instanceof Queen)
+                        queenOrRookCounter++;
+                        if(Tiles[i][j].p instanceof Pawn)
+                        pawnCounter++;
+                    }
+                }
+            }
+        }
+        int colorKnightAndBishopCounter = colorBishopCounter + colorKnightCounter;
+        int notColorKnightAndBishopCounter = notColorBishopCounter + notColorKnightCounter;
+        if(pawnCounter == 0 && queenOrRookCounter == 0 && ((colorKnightAndBishopCounter <= 1 && notColorKnightAndBishopCounter <= 1) ||
+            (colorKnightCounter == 2 && notColorKnightAndBishopCounter == 0) ||
+            (notColorKnightCounter == 2 && colorKnightAndBishopCounter == 0)
+        )) { // conditions for insufficient material, matches chess.com
+            return true;
+        }
+
+        return false;
+    }
 }
