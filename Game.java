@@ -1351,35 +1351,35 @@ public class Game {
             }
         }
         // now check the knight tiles if they are in bounds
-        if(knightsCausedCheckMateHelper(2, 1, r, c, true) == true) { // up 2 right 1
+        if(knightsCausedCheckMateHelper(2, 1, r, c, color) == true) { // up 2 right 1
             System.out.println("here7");
             return false;
         }
-        if(knightsCausedCheckMateHelper(1, 2, r, c, true) == true) { // up 1 right 2
+        if(knightsCausedCheckMateHelper(1, 2, r, c, color) == true) { // up 1 right 2
             System.out.println("here8");
             return false;
         }
-        if(knightsCausedCheckMateHelper(-1, 2, r, c, true) == true) { // down 1 right 2
+        if(knightsCausedCheckMateHelper(-1, 2, r, c, color) == true) { // down 1 right 2
             System.out.println("here9");
             return false;
         }
-        if(knightsCausedCheckMateHelper(-2, 1, r, c, true) == true) { // down 2 right 1
+        if(knightsCausedCheckMateHelper(-2, 1, r, c, color) == true) { // down 2 right 1
             System.out.println("here100");
             return false;
         }
-        if(knightsCausedCheckMateHelper(-2, -1, r, c, true) == true) { // down 2 left 1
+        if(knightsCausedCheckMateHelper(-2, -1, r, c, color) == true) { // down 2 left 1
             System.out.println("here101");
             return false;
         }
-        if(knightsCausedCheckMateHelper(-1, -2, r, c, true) == true) { // down 1 left 2
+        if(knightsCausedCheckMateHelper(-1, -2, r, c, color) == true) { // down 1 left 2
             System.out.println("here102");
             return false;
         }
-        if(knightsCausedCheckMateHelper(1, -2, r, c, true) == true) { // up 1 left 2
+        if(knightsCausedCheckMateHelper(1, -2, r, c, color) == true) { // up 1 left 2
             System.out.println("here103");
             return false;
         }
-        if(knightsCausedCheckMateHelper(2, -1, r, c, true) == true) { // up 2 left 1
+        if(knightsCausedCheckMateHelper(2, -1, r, c, color) == true) { // up 2 left 1
             System.out.println("here104");
             return false;
         }
